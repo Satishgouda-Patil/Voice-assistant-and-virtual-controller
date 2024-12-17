@@ -1,0 +1,115 @@
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: radial-gradient(circle at center, #111, #000);
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+.circle {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  background: linear-gradient(45deg, rgba(255, 0, 128, 0.86), rgba(79, 235, 12, 0.84), rgba(0, 128, 255, 0.889));
+  border-radius: 50%;
+  box-shadow: 0 0 20px #ff00806f, 0 0 30px rgba(79, 235, 12, 0.84), 0 0 40px #007fff;
+  animation: pulse 2s infinite ease-in-out, colorChange 5s infinite, bounce 6s infinite ease-in-out;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  -webkit-animation: pulse 2s infinite ease-in-out, colorChange 5s infinite, bounce 6s infinite ease-in-out;
+}
+
+.circle:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 30px #ff007f, 0 0 40px rgba(83, 235, 12, 0.84), 0 0 50px #007fff;
+}
+
+.circle:active {
+  animation: spin infinite 3s linear, bounce 6s infinite ease-in-out;
+  transform: scale(1.1);
+  box-shadow: 0 0 50px rgba(255, 0, 128, 0.86), 0 0 60px rgba(83, 235, 12, 0.84), 0 0 70px rgba(0, 128, 255, 0.889);
+}
+
+.circle::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, transparent, rgba(255, 0, 127, 0.4), rgba(0, 255, 127, 0.4), rgba(0, 127, 255, 0.4));
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  filter: blur(10px);
+  animation: glow 3s infinite ease-in-out;
+}
+
+.circle::after {
+  content: "Listening...";
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  color: #fff;
+  text-shadow: 0 0 10px #ff007f, 0 0 20px #00ff7f, 0 0 30px #007fff;
+  letter-spacing: 1px;
+  animation: textGlow 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 1;
+  }
+}
+
+@keyframes textGlow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes colorChange {
+  0% {
+    background: linear-gradient(45deg, #ff007f, #00ff7f, #007fff);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateZ(0) scale(1);
+  }
+  50% {
+    transform: translateZ(30px) scale(1.1);
+  }
+}

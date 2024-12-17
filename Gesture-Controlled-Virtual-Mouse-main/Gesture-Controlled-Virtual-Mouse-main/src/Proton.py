@@ -3,7 +3,7 @@ import speech_recognition as sr
 from datetime import date
 import time
 import webbrowser
-import requests
+# import requests
 import google.generativeai as genai
 # import openai
 # from openai import OpenAI
@@ -17,22 +17,25 @@ import sys
 import os
 from os import listdir
 from os.path import isfile, join
-import smtplib
-import wikipedia
+# import smtplib
+# import wikipedia
 import Gesture_Controller
 #import Gesture_Controller_Gloved as Gesture_Controller
 import app
 from threading import Thread
 from os.path import isdir, join
-
+import random
 # -------------Object Initialization---------------
 today = date.today()
 r = sr.Recognizer()
 keyboard = Controller()
 engine = pyttsx3.init('sapi5')
 engine = pyttsx3.init()
+# Set the voice rate (speech speed)
+rate = engine.getProperty('rate')
+engine.setProperty('rate', rate - 30)
 voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[0].id)
+engine.setProperty('voice', voices[1].id)
 
 # ----------------Variables------------------------
 file_exp_status = False
@@ -126,14 +129,36 @@ def respond(voice_data):
     elif 'hello' in voice_data:
         wish()
 
-    elif 'what is your name' in voice_data:
+    elif any(phrase in voice_data for phrase in ('change your voice', 'change the voice', 'voice')):
+        voices = engine.getProperty('voices')
+        current_voice = engine.getProperty('voice')
+        # Check current voice and switch
+        replyMsg=getRandomChangeVoice()
+        for voice in voices:
+            # print("checking "+current_voice+" is cur voice id \n"+" voice"+voice.id+"")
+            if 'David' in voice.name and voice.id != current_voice:
+                # Change to male voice
+                engine.setProperty('voice', voice.id)
+                reply(replyMsg)
+                engine.runAndWait()
+                break
+            elif 'Zira' in voice.name and voice.id != current_voice:
+                # Change to female voice
+                engine.setProperty('voice', voice.id)
+                reply(replyMsg)
+                engine.runAndWait()
+                break
+
+    elif any(phrase in voice_data for phrase in ('what is your name', "what's your name","your name")):
         reply('My name is Nabs!')
 
     elif 'date' in voice_data:
         reply(today.strftime("%B %d, %Y"))
 
+
     elif 'time' in voice_data:
-        reply(str(datetime.datetime.now()/2).split(" ")[1].split('.')[0])
+        cur_time=current_time = datetime.datetime.now().strftime("%I:%M:%S %p")
+        reply(cur_time)
 
     elif "refresh" in voice_data or "refesh" in voice_data:
         refresh_desktop()
@@ -225,7 +250,7 @@ def respond(voice_data):
 
 
    # DYNAMIC CONTROLS
-    elif 'launch gesture recognition' in voice_data:
+    elif any(phrase in voice_data for phrase in ('launch gesture recognition', 'open gesture recognition', 'gesture recognition')):
         if Gesture_Controller.GestureController.gc_mode:
             reply('Gesture recognition is already active')
         else:
@@ -234,7 +259,7 @@ def respond(voice_data):
             t.start()
             reply('Launched Successfully')
 
-    elif ('stop gesture recognition' in voice_data) or ('top gesture recognition' in voice_data):
+    elif any(phrase in voice_data for phrase in ('stop gesture recognition', 'stop', 'close gesture recognition')):
         if Gesture_Controller.GestureController.gc_mode:
             Gesture_Controller.GestureController.gc_mode = 0
             reply('Gesture recognition stopped')
@@ -306,7 +331,7 @@ def respond(voice_data):
         reply("You're welcome!  If you have any more questions or need further assistance, feel free to ask.")
 
     #playing music
-    elif 'play music' in voice_data or 'play songs' in voice_data or 'play song' in voice_data:
+    elif any(phrase in voice_data for phrase in ('play music', 'play songs', 'play song', 'songs', 'music')):
         music_dir = 'C:\\Users\\satis\\Music'
         songs = os.listdir(music_dir)
         mp3_files = [file for file in songs if file.endswith('.mp3')]
@@ -320,23 +345,23 @@ def respond(voice_data):
 
             #wait for stop, change song cmds
             temp_audio = greater_record_audio()
-            if "stop" in temp_audio:
+            if any(phrase in temp_audio for phrase in ('stop', 'exit', 'stop the music', 'close')):
                 pygame.mixer.music.stop()
                 reply("music player stopped.")
                 break
 
-            elif 'next song' in temp_audio:
+            elif any(phrase in temp_audio for phrase in ('next song', 'change song', 'change the song', 'chnage music')):
                 pygame.mixer.music.stop()  # Stop current song
                 cur_idx = (cur_idx + 1) % len(mp3_files)  # Go to next song
-                reply("Playing next song...")
+                if 'next' in temp_audio:
+                    reply("Playing next song...")
+                else:
+                    reply("yeah changed the song")
 
             elif 'previous song' in temp_audio or 'back' in temp_audio:
                 pygame.mixer.music.stop()  # Stop current song
                 cur_idx = (cur_idx - 1) % len(mp3_files)  # Go to previous song
                 reply("Playing previous song...")
-            else:
-                pygame.time.delay(9000)
-                pygame.mixer.music.stop()
 
     else:
         # uncommnet the below code. if you don't want LLM's(GPT's) responces
@@ -355,7 +380,6 @@ from selenium import webdriver
 def search_youtube(query, video_choice=1):
     query = str(query)  # Ensure the query is a string
     print(f"Search query: {query}")
-    
     search_url = f'https://www.youtube.com/results?search_query={query}'
     driver = webdriver.Chrome()  # You can use any driver (e.g., Firefox)
     driver.get(search_url)
@@ -453,6 +477,28 @@ def get_answer_from_chatgpt(question):
 def play_song(song_path):
     pygame.mixer.music.load(song_path)
     pygame.mixer.music.play()  # Play the song
+
+# 6) Dynamic reply for changing voice
+def getRandomChangeVoice():
+    # List of possible responses
+    responses = [
+        "Sure! I've changed my voice. How do I sound now?",
+        "Got it! I've switched to a new voice. What do you think?",
+        "Okay, I’ve changed my voice! Is this better?",
+        "Voila! I've swapped my voice. I hope you like the new me!",
+        "All done! New voice activated! How do I sound now?",
+        "Switching things up! I've changed my voice. Do you like it?",
+        "Voice changed! Let me know if you’d like to switch again.",
+        "I've switched my voice! Let me know if you want me to change it again.",
+        "Done! I've updated my voice. How does it sound?",
+        "I’ve changed my voice! Let me know if you’d like a different one.",
+        "I’ve updated my voice! Is this better for you?",
+        "I’ve switched voices! Feel free to ask me to change it anytime.",
+        "The voice has been changed. Please let me know if you would like any further adjustments.",
+        "Your voice preference has been updated. If you wish to change it again, just let me know."
+    ]
+    message = random.choice(responses)
+    return message
 # ------------------Driver Code--------------------
 
 t1 = Thread(target = app.ChatBot.start)
